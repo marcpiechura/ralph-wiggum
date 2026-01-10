@@ -29,7 +29,7 @@ Two modes:
 
 ```bash
 # Add the marketplace
-/plugin marketplace add your-username/claude-ralph-wiggum
+/plugin marketplace add hmemcpy/claude-ralph-wiggum
 
 # Install the plugin
 /plugin install ralph-wiggum
@@ -39,7 +39,7 @@ Two modes:
 
 ```bash
 # Clone to your home directory
-git clone https://github.com/your-username/claude-ralph-wiggum ~/.claude-ralph-wiggum
+git clone https://github.com/hmemcpy/claude-ralph-wiggum ~/.claude-ralph-wiggum
 
 # Add to Claude Code (run inside Claude Code)
 /plugin install ~/.claude-ralph-wiggum --scope user
@@ -49,7 +49,7 @@ git clone https://github.com/your-username/claude-ralph-wiggum ~/.claude-ralph-w
 
 ```bash
 # Clone into your project
-git clone https://github.com/your-username/claude-ralph-wiggum .claude-ralph-wiggum
+git clone https://github.com/hmemcpy/claude-ralph-wiggum .claude-ralph-wiggum
 
 # Install for this project only
 /plugin install .claude-ralph-wiggum --scope local
