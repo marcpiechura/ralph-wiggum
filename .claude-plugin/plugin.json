@@ -1,0 +1,21 @@
+{
+  "name": "ralph-wiggum",
+  "description": "Generate Ralph Wiggum loop infrastructure for iterative AI-driven development",
+  "version": "1.0.0",
+  "author": {
+    "name": "Community"
+  },
+  "homepage": "https://github.com/ghuntley/how-to-ralph-wiggum",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/claude-ralph-wiggum"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ralph-wiggum",
+    "agentic-loop",
+    "iterative-development",
+    "ai-development",
+    "automation"
+  ]
+}
