@@ -228,8 +228,21 @@ Read `@AGENTS.md` or `@CLAUDE.md` for project rules.
 ### 0b. Study the plan
 Read `@IMPLEMENTATION_PLAN.md` to understand current state.
 
-### 0c. Select task
-Choose the highest priority incomplete task (first `[ ] Not started`).
+### 0c. Check for completion
+**IMPORTANT**: Check if ALL tasks in the plan are marked `[x]` (completed).
+
+If ALL tasks are complete:
+1. Run validation: `[VALIDATION_COMMAND]`
+2. If validation fails, fix issues and retry
+3. Check for uncommitted changes: `git status --porcelain`
+4. If there are uncommitted changes:
+   - Stage all changes: `git add -A`
+   - Commit with message: `chore: final cleanup after completing all tasks`
+5. Output the completion signal: **RALPH_COMPLETE**
+6. Exit immediately
+
+### 0d. Select task
+If tasks remain, choose the highest priority incomplete task (first `[ ] Not started`).
 
 ## Phase 1: Implement
 
@@ -271,6 +284,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 1003. Up to 500 subagents for searches and reads
 
 ## Exit Conditions
+
+**All Complete**: All tasks done, validation passes → Output `RALPH_COMPLETE` → Exit
 
 **Success**: Task complete, tests pass, committed → Exit
 
@@ -378,13 +393,25 @@ is_usage_limit_error() {
   local output="$1"
   local exit_code="$2"
 
-  # Check for common rate limit / usage limit patterns
-  if [[ "$output" =~ (rate.?limit|usage.?limit|quota.?exceeded|too.?many.?requests|429|exceeded.*limit|limit.*exceeded|billing|credit) ]]; then
+  # Check for Claude Max/Pro subscription limits (exact message)
+  # Format: "Claude usage limit reached. Your limit will reset at Oct 7, 1am."
+  if [[ "$output" =~ "Claude usage limit reached" ]]; then
     return 0
   fi
 
-  # Exit code 1 with specific error patterns
-  if [[ "$exit_code" == "1" && "$output" =~ (overloaded|capacity|unavailable) ]]; then
+  # Check for API rate_limit_error (structured JSON from API)
+  # Format: {"type":"error","error":{"type":"rate_limit_error",...}}
+  if [[ "$output" =~ \"type\":\"rate_limit_error\" ]]; then
+    return 0
+  fi
+
+  # Check for API overloaded_error (529 status)
+  if [[ "$output" =~ \"type\":\"overloaded_error\" ]]; then
+    return 0
+  fi
+
+  # Check for HTTP 429/529 status codes in error output
+  if [[ "$output" =~ Error:\ 429 ]] || [[ "$output" =~ Error:\ 529 ]]; then
     return 0
   fi
 
@@ -395,8 +422,37 @@ is_usage_limit_error() {
 get_sleep_duration() {
   local output="$1"
 
-  # Try to extract reset time from error message if present
-  # Pattern: "resets at HH:MM" or "try again in X minutes/hours"
+  # Check for Claude subscription reset time
+  # Format: "Your limit will reset at Oct 7, 1am" or "reset at Jan 12, 3pm"
+  if [[ "$output" =~ "reset at "([A-Za-z]+)" "([0-9]+)", "([0-9]+)(am|pm) ]]; then
+    local month="${BASH_REMATCH[1]}"
+    local day="${BASH_REMATCH[2]}"
+    local hour="${BASH_REMATCH[3]}"
+    local ampm="${BASH_REMATCH[4]}"
+
+    # Convert to 24-hour format
+    if [[ "$ampm" == "pm" && "$hour" != "12" ]]; then
+      hour=$((hour + 12))
+    elif [[ "$ampm" == "am" && "$hour" == "12" ]]; then
+      hour=0
+    fi
+
+    # Calculate seconds until reset (macOS date syntax)
+    local reset_time=$(date -j -f "%b %d %H" "$month $day $hour" +%s 2>/dev/null)
+    if [[ -n "$reset_time" ]]; then
+      local now=$(date +%s)
+      local diff=$((reset_time - now))
+      # If reset time is in the past, it's next month/year
+      if [[ $diff -lt 0 ]]; then
+        diff=$((diff + 86400 * 30))  # Add ~30 days
+      fi
+      echo $((diff + 60))  # Add 1 minute buffer
+      return
+    fi
+  fi
+
+  # Try to extract reset time from API error message
+  # Pattern: "try again in X minutes/hours"
   if [[ "$output" =~ "try again in "([0-9]+)" minute" ]]; then
     echo $(( ${BASH_REMATCH[1]} * 60 + 60 ))  # Add 1 minute buffer
     return
@@ -496,6 +552,14 @@ while true; do
 
   # Success - reset failure counter
   CONSECUTIVE_FAILURES=0
+
+  # Check for completion signal from Claude
+  if [[ "$OUTPUT" =~ "RALPH_COMPLETE" ]]; then
+    echo ""
+    echo -e "${GREEN}=== All Tasks Complete ===${NC}"
+    echo -e "${GREEN}Claude has signaled that all tasks are finished.${NC}"
+    break
+  fi
 
   if [[ $MAX_ITERATIONS -gt 0 && $ITERATION -ge $MAX_ITERATIONS ]]; then
     echo ""
