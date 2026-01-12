@@ -13,7 +13,7 @@
 - [x] P0.1 Create greet function
   - scope: src/greet.ts
   - validation: npx tsc --noEmit
-  - assigned_thread: https://ampcode.com/threads/T-019bb2ae-6d83-7547-a6e8-9a96af794bc6
+  - assigned_thread: T-019bb2bc-9e3a-732d-96ee-444276de0f7e
   - status: completed
 
 ### P1: Enhancements
