@@ -36,18 +36,16 @@ The plugin auto-detects which agent is running and generates appropriate files.
 
 ### Claude Code
 
-#### From GitHub (Recommended)
+#### Direct Install from GitHub
 ```bash
-# Add the marketplace
-/plugin marketplace add hmemcpy/ralph-wiggum
-
-# Install the plugin
-/plugin install ralph-wiggum
+# In Claude Code interactive mode:
+/plugin install https://github.com/hmemcpy/ralph-wiggum
 ```
 
 #### Manual Installation (User-Global)
 ```bash
 git clone https://github.com/hmemcpy/ralph-wiggum ~/.ralph-wiggum
+
 # In Claude Code:
 /plugin install ~/.ralph-wiggum --scope user
 ```
@@ -55,20 +53,23 @@ git clone https://github.com/hmemcpy/ralph-wiggum ~/.ralph-wiggum
 #### Manual Installation (Project-Local)
 ```bash
 git clone https://github.com/hmemcpy/ralph-wiggum .ralph-wiggum
+
+# In Claude Code:
 /plugin install .ralph-wiggum --scope local
 ```
 
 ### Amp
 
-#### As a Skill (User-Global)
+#### Install from GitHub
 ```bash
-git clone https://github.com/hmemcpy/ralph-wiggum ~/.config/agents/skills/ralph-wiggum
+# Install the ralph skill
+amp skill add hmemcpy/ralph-wiggum/ralph
 ```
 
-#### Project-Local
+#### Manual Installation
 ```bash
-mkdir -p .amp/skills
-git clone https://github.com/hmemcpy/ralph-wiggum .amp/skills/ralph-wiggum
+# Clone to skills directory
+git clone https://github.com/hmemcpy/ralph-wiggum ~/.config/agents/skills/ralph-wiggum
 ```
 
 ## Usage
@@ -144,27 +145,32 @@ chmod +x loop.sh
 
 ```
 ralph-wiggum/
-├── SKILL.md                # Skill metadata (Amp)
-├── .claude-plugin/         # Plugin metadata (Claude)
+├── .claude-plugin/
+│   └── plugin.json         # Claude Code plugin manifest
 ├── commands/
-│   └── ralph.md            # Main entry point
+│   └── ralph.md            # Main slash command (Claude Code)
+├── skills/
+│   └── ralph/
+│       └── SKILL.md        # Amp skill definition
 ├── common/                 # Shared components
 │   ├── what-is-ralph.md
 │   ├── principles.md
 │   ├── spec-format.md
 │   ├── plan-format.md
 │   └── checklist.md
-└── agents/                 # Agent-specific files
-    ├── claude/
-    │   ├── tools.md
-    │   ├── prompt-plan.md
-    │   ├── prompt-build.md
-    │   └── loop.sh
-    └── amp/
-        ├── tools.md
-        ├── prompt-plan.md
-        ├── prompt-build.md
-        └── loop.sh
+├── agents/                 # Agent-specific templates
+│   ├── claude/
+│   │   ├── tools.md
+│   │   ├── prompt-plan.md
+│   │   ├── prompt-build.md
+│   │   └── loop.sh
+│   └── amp/
+│       ├── tools.md
+│       ├── prompt-plan.md
+│       ├── prompt-build.md
+│       └── loop.sh
+├── SKILL.md                # Root skill (for compatibility)
+└── README.md
 ```
 
 ## Adding Support for New Agents

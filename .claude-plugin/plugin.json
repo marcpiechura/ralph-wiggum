@@ -1,0 +1,12 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "ralph-wiggum",
+  "version": "1.0.0",
+  "description": "Generate Ralph Wiggum loop infrastructure for iterative AI-driven development. Supports Claude Code and Amp with agent-specific optimizations.",
+  "author": {
+    "name": "hmemcpy"
+  },
+  "repository": "https://github.com/hmemcpy/ralph-wiggum",
+  "license": "MIT",
+  "keywords": ["ralph-wiggum", "ai-loop", "autonomous", "development"]
+}
