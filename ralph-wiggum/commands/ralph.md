@@ -202,7 +202,8 @@ Capture the WHY, not just the WHAT.
 
 When plan is complete:
 1. Commit updated `IMPLEMENTATION_PLAN.md`
-2. Exit
+2. Output the completion signal: **RALPH_COMPLETE**
+3. Exit immediately
 
 ## Context Files
 
@@ -316,14 +317,16 @@ Generate the enhanced loop script with automatic usage limit detection and recov
 #   - Graceful retry after rate limits
 #
 # Usage:
-#   ./loop.sh           # Build mode (default)
-#   ./loop.sh plan      # Planning mode
-#   ./loop.sh 10        # Max 10 iterations
-#   ./loop.sh plan 5    # Planning mode, max 5 iterations
+#   ./loop.sh           # Auto mode: plan first, then build (default)
+#   ./loop.sh plan      # Planning mode only
+#   ./loop.sh build     # Build mode only
+#   ./loop.sh 10        # Auto mode, max 10 build iterations
+#   ./loop.sh build 5   # Build mode, max 5 iterations
 
 set -e
 
-MODE="build"
+MODE="plan"
+AUTO_MODE=true
 MAX_ITERATIONS=0
 ITERATION=0
 CONSECUTIVE_FAILURES=0
@@ -339,12 +342,26 @@ NC='\033[0m' # No Color
 for arg in "$@"; do
   if [[ "$arg" == "plan" ]]; then
     MODE="plan"
+    AUTO_MODE=false
+  elif [[ "$arg" == "build" ]]; then
+    MODE="build"
+    AUTO_MODE=false
   elif [[ "$arg" =~ ^[0-9]+$ ]]; then
     MAX_ITERATIONS=$arg
   fi
 done
 
 PROMPT_FILE="PROMPT_${MODE}.md"
+
+# Function to switch from plan to build mode
+switch_to_build_mode() {
+  echo ""
+  echo -e "${CYAN}=== Switching to Build Mode ===${NC}"
+  echo ""
+  MODE="build"
+  PROMPT_FILE="PROMPT_${MODE}.md"
+  ITERATION=0  # Reset iteration counter for build phase
+}
 
 # Calculate seconds until next hour boundary
 seconds_until_next_hour() {
@@ -393,9 +410,9 @@ is_usage_limit_error() {
   local output="$1"
   local exit_code="$2"
 
-  # Check for Claude Max/Pro subscription limits (exact message)
-  # Format: "Claude usage limit reached. Your limit will reset at Oct 7, 1am."
-  if [[ "$output" =~ "Claude usage limit reached" ]]; then
+  # Check for Claude Max/Pro subscription limits
+  # Format: "You've hit your limit · resets 6am (Asia/Jerusalem)"
+  if [[ "$output" =~ "You've hit your limit" ]]; then
     return 0
   fi
 
@@ -422,13 +439,43 @@ is_usage_limit_error() {
 get_sleep_duration() {
   local output="$1"
 
-  # Check for Claude subscription reset time
-  # Format: "Your limit will reset at Oct 7, 1am" or "reset at Jan 12, 3pm"
-  if [[ "$output" =~ "reset at "([A-Za-z]+)" "([0-9]+)", "([0-9]+)(am|pm) ]]; then
-    local month="${BASH_REMATCH[1]}"
-    local day="${BASH_REMATCH[2]}"
-    local hour="${BASH_REMATCH[3]}"
-    local ampm="${BASH_REMATCH[4]}"
+  # First, try to extract reset time from JSON payload
+  # Look for resetsAt timestamp in JSON: "resetsAt":"2026-01-12T06:00:00+02:00" or similar
+  local json_reset=$(echo "$output" | grep -oE '"resetsAt"\s*:\s*"[^"]+"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+  if [[ -n "$json_reset" ]]; then
+    # Parse ISO 8601 timestamp
+    local reset_epoch=$(date -jf "%Y-%m-%dT%H:%M:%S%z" "$json_reset" +%s 2>/dev/null || \
+                        date -d "$json_reset" +%s 2>/dev/null)
+    if [[ -n "$reset_epoch" ]]; then
+      local now=$(date +%s)
+      local diff=$((reset_epoch - now))
+      if [[ $diff -gt 0 ]]; then
+        echo $((diff + 60))  # Add 1 minute buffer
+        return
+      fi
+    fi
+  fi
+
+  # Also check for reset_at in JSON (snake_case variant)
+  local json_reset_alt=$(echo "$output" | grep -oE '"reset_at"\s*:\s*"[^"]+"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+  if [[ -n "$json_reset_alt" ]]; then
+    local reset_epoch=$(date -jf "%Y-%m-%dT%H:%M:%S%z" "$json_reset_alt" +%s 2>/dev/null || \
+                        date -d "$json_reset_alt" +%s 2>/dev/null)
+    if [[ -n "$reset_epoch" ]]; then
+      local now=$(date +%s)
+      local diff=$((reset_epoch - now))
+      if [[ $diff -gt 0 ]]; then
+        echo $((diff + 60))  # Add 1 minute buffer
+        return
+      fi
+    fi
+  fi
+
+  # Check for new format: "resets 6am (Asia/Jerusalem)" or "resets 3pm (Europe/London)"
+  if [[ "$output" =~ resets[[:space:]]+([0-9]+)(am|pm)[[:space:]]*\(([A-Za-z_/]+)\) ]]; then
+    local hour="${BASH_REMATCH[1]}"
+    local ampm="${BASH_REMATCH[2]}"
+    local timezone="${BASH_REMATCH[3]}"
 
     # Convert to 24-hour format
     if [[ "$ampm" == "pm" && "$hour" != "12" ]]; then
@@ -437,14 +484,18 @@ get_sleep_duration() {
       hour=0
     fi
 
-    # Calculate seconds until reset (macOS date syntax)
-    local reset_time=$(date -j -f "%b %d %H" "$month $day $hour" +%s 2>/dev/null)
+    # Calculate seconds until reset in the specified timezone
+    # Use TZ environment variable to compute target time
+    local now=$(date +%s)
+    local today_date=$(TZ="$timezone" date +%Y-%m-%d)
+    local reset_time=$(TZ="$timezone" date -jf "%Y-%m-%d %H:%M:%S" "$today_date $(printf '%02d' $hour):00:00" +%s 2>/dev/null || \
+                       TZ="$timezone" date -d "$today_date $(printf '%02d' $hour):00:00" +%s 2>/dev/null)
+
     if [[ -n "$reset_time" ]]; then
-      local now=$(date +%s)
       local diff=$((reset_time - now))
-      # If reset time is in the past, it's next month/year
+      # If reset time is in the past, add 24 hours
       if [[ $diff -lt 0 ]]; then
-        diff=$((diff + 86400 * 30))  # Add ~30 days
+        diff=$((diff + 86400))
       fi
       echo $((diff + 60))  # Add 1 minute buffer
       return
@@ -499,15 +550,24 @@ handle_usage_limit() {
   CONSECUTIVE_FAILURES=0
 }
 
-echo -e "${GREEN}Ralph loop: $(echo "$MODE" | tr '[:lower:]' '[:upper:]') mode${NC}"
-[[ $MAX_ITERATIONS -gt 0 ]] && echo "Max iterations: $MAX_ITERATIONS"
+if [[ "$AUTO_MODE" == true ]]; then
+  echo -e "${GREEN}Ralph loop: AUTO mode (plan → build)${NC}"
+  [[ $MAX_ITERATIONS -gt 0 ]] && echo "Max build iterations: $MAX_ITERATIONS"
+else
+  echo -e "${GREEN}Ralph loop: $(echo "$MODE" | tr '[:lower:]' '[:upper:]') mode${NC}"
+  [[ $MAX_ITERATIONS -gt 0 ]] && echo "Max iterations: $MAX_ITERATIONS"
+fi
 echo "Press Ctrl+C to stop"
 echo "---"
 
 while true; do
   ITERATION=$((ITERATION + 1))
   echo ""
-  echo -e "${GREEN}=== Iteration $ITERATION ===${NC}"
+  if [[ "$AUTO_MODE" == true ]]; then
+    echo -e "${GREEN}=== ${MODE^} Iteration $ITERATION ===${NC}"
+  else
+    echo -e "${GREEN}=== Iteration $ITERATION ===${NC}"
+  fi
   echo ""
 
   # Capture both stdout and stderr, and exit code
@@ -553,15 +613,27 @@ while true; do
   # Success - reset failure counter
   CONSECUTIVE_FAILURES=0
 
-  # Check for completion signal from Claude
+  # Check for completion signal from Claude (used by both build and plan modes)
   if [[ "$OUTPUT" =~ "RALPH_COMPLETE" ]]; then
     echo ""
-    echo -e "${GREEN}=== All Tasks Complete ===${NC}"
-    echo -e "${GREEN}Claude has signaled that all tasks are finished.${NC}"
+    echo -e "${GREEN}=== Ralph Complete ===${NC}"
+    echo -e "${GREEN}Claude has signaled that the ${MODE} loop is finished.${NC}"
+
+    # In auto mode, switch from plan to build
+    if [[ "$AUTO_MODE" == true && "$MODE" == "plan" ]]; then
+      switch_to_build_mode
+      continue
+    fi
     break
   fi
 
+  # Max iterations check (in auto mode, only applies to build phase)
   if [[ $MAX_ITERATIONS -gt 0 && $ITERATION -ge $MAX_ITERATIONS ]]; then
+    if [[ "$AUTO_MODE" == true && "$MODE" == "plan" ]]; then
+      # Don't limit plan phase in auto mode, switch to build
+      switch_to_build_mode
+      continue
+    fi
     echo ""
     echo -e "${GREEN}Reached max iterations ($MAX_ITERATIONS).${NC}"
     break
