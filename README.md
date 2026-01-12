@@ -36,15 +36,21 @@ The plugin auto-detects which agent is running and generates appropriate files.
 
 ### Claude Code
 
-Clone directly to the Claude Code skills directory:
-
+#### From GitHub (recommended)
 ```bash
-git clone https://github.com/hmemcpy/ralph-wiggum ~/.claude/skills/ralph-wiggum
+# Add as a marketplace
+/plugin marketplace add hmemcpy/ralph-wiggum
+
+# Install the plugin
+/plugin install ralph-wiggum@ralph-wiggum
 ```
 
-Or run `install.sh` from a local clone:
-
+#### Local Development
 ```bash
+# Test without installing
+claude --plugin-dir /path/to/ralph-wiggum
+
+# Or clone and use install.sh
 git clone https://github.com/hmemcpy/ralph-wiggum
 cd ralph-wiggum
 ./install.sh

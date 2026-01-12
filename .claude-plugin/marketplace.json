@@ -1,0 +1,15 @@
+{
+  "name": "ralph-wiggum",
+  "owner": {
+    "name": "hmemcpy",
+    "email": "hmemcpy@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "ralph-wiggum",
+      "source": ".",
+      "description": "Generate Ralph Wiggum loop infrastructure for iterative AI-driven development",
+      "version": "1.0.0"
+    }
+  ]
+}
