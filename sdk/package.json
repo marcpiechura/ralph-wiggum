@@ -1,0 +1,40 @@
+{
+  "name": "@hmemcpy/ralph-wiggum",
+  "version": "2.0.0",
+  "description": "AI-Driven Development Orchestrator using Amp SDK",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ralph": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun build src/cli.ts src/index.ts --outdir dist --target node",
+    "dev": "bun run src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "ai",
+    "agent",
+    "amp",
+    "development",
+    "automation",
+    "orchestrator"
+  ],
+  "author": "hmemcpy",
+  "license": "MIT",
+  "dependencies": {
+    "@sourcegraph/amp-sdk": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
