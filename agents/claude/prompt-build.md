@@ -11,9 +11,14 @@ Read `@AGENTS.md` or `@CLAUDE.md` for project rules.
 Read `@IMPLEMENTATION_PLAN.md` to understand current state.
 
 ### 0c. Check for completion
-**IMPORTANT**: Check if ALL tasks in the plan are marked `[x]` (completed).
+**MANDATORY**: Before doing ANYTHING else, run this command (skips the legend section):
+```bash
+tail -n +12 IMPLEMENTATION_PLAN.md | grep -c "^\- \[ \]" || echo 0
+```
 
-If ALL tasks are complete:
+If the result is greater than 0, there are incomplete tasks. **SKIP to step 0d immediately.**
+
+Only if the result is 0 (zero incomplete tasks):
 1. Run validation: `[VALIDATION_COMMAND]`
 2. If validation fails, fix issues and retry
 3. Check for uncommitted changes: `git status --porcelain`
@@ -67,13 +72,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Exit Conditions
 
-**IMPORTANT**: Only output `RALPH_COMPLETE` when ALL tasks in IMPLEMENTATION_PLAN.md are marked `[x]` complete. 
+**FORBIDDEN**: Do NOT output RALPH_COMPLETE unless grep returned 0 in step 0c.
 
-**After completing ONE task**: Just exit. Do NOT output RALPH_COMPLETE. The loop will restart you.
+**After completing ONE task**: Just exit silently. NO RALPH_COMPLETE. The loop will restart you.
 
-**All tasks complete**: All tasks marked `[x]`, validation passes → Output `RALPH_COMPLETE` → Exit
+**Blocked**: Document blocker in plan, commit plan update → Exit silently. NO RALPH_COMPLETE.
 
-**Blocked**: Document blocker in plan, commit plan update → Exit (no RALPH_COMPLETE)
+**Only exception**: Step 0c grep returned 0 AND validation passes → Output `RALPH_COMPLETE`
 
 ## Context Files
 

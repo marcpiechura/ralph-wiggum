@@ -213,21 +213,21 @@ while true; do
     < "$PROMPT_FILE" 2>&1 | tee "$TEMP_OUTPUT" | jq -r '
       def tool_info:
         if .name == "edit_file" or .name == "create_file" or .name == "Read" then
-          (.input.path | split("/") | last | .[0:40])
+          (.input.path | split("/") | last | .[0:60])
         elif .name == "todo_write" then
-          ((.input.todos // []) | map(.content) | join(", ") | .[0:60])
+          ((.input.todos // []) | map(.content) | join(", ") | if contains("\n") then .[0:60] else . end)
         elif .name == "Bash" then
-          (.input.cmd | split("\n") | first | .[0:50])
+          (.input.cmd | if contains("\n") then split("\n") | first | .[0:50] else .[0:80] end)
         elif .name == "Grep" then
-          (.input.pattern | .[0:30])
+          (.input.pattern | .[0:40])
         elif .name == "glob" then
-          (.input.filePattern | .[0:30])
+          (.input.filePattern | .[0:40])
         elif .name == "finder" then
-          (.input.query | .[0:40])
+          (.input.query | if contains("\n") then .[0:40] else . end)
         elif .name == "oracle" then
-          (.input.task | .[0:40])
+          (.input.task | if contains("\n") then .[0:40] else .[0:80] end)
         elif .name == "Task" then
-          (.input.description // .input.prompt | .[0:40])
+          (.input.description // .input.prompt | if contains("\n") then .[0:40] else .[0:80] end)
         else null end;
       if .type == "assistant" then
         .message.content[] |
