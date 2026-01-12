@@ -66,14 +66,17 @@ Two modes:
 ### Amp - Ralph 2.0 (SDK)
 
 ```bash
-# Clone and install
+# Clone and build
 git clone https://github.com/hmemcpy/ralph-wiggum
 cd ralph-wiggum/sdk
-bun install
+bun install && bun run compile
+
+# Install globally
+sudo mv ralph /usr/local/bin/
 
 # Run
-bun run src/cli.ts --help
-bun run src/cli.ts auto -p /path/to/project --validation "pnpm run check"
+ralph --help
+ralph auto -p /path/to/project --validation "pnpm run check"
 ```
 
 ### Amp - Ralph 1.0 (Skill)
@@ -101,19 +104,17 @@ amp skill add hmemcpy/ralph-wiggum/ralph
 ### Ralph 2.0 (SDK)
 
 ```bash
-cd sdk
-
 # Auto mode: plan then build
-bun run src/cli.ts auto -p /path/to/project
+ralph auto -p /path/to/project
 
 # Plan only
-bun run src/cli.ts plan -p /path/to/project
+ralph plan -p /path/to/project
 
 # Build only (requires existing IMPLEMENTATION_PLAN.md)
-bun run src/cli.ts build -p /path/to/project
+ralph build -p /path/to/project
 
 # With options
-bun run src/cli.ts build -v --validation "pnpm run check"
+ralph build -v --validation "pnpm run check"
 ```
 
 ### Ralph 1.0 (Bash)

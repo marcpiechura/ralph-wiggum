@@ -16,6 +16,8 @@ node_modules/
 # SDK build artifacts
 sdk/dist/
 sdk/node_modules/
+sdk/ralph
+sdk/ralph-*
 *.log
 
 # Test artifacts

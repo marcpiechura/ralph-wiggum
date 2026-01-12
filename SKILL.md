@@ -17,20 +17,26 @@ Uses the Amp SDK for programmatic thread orchestration with native thread map in
 # Navigate to SDK directory
 cd ~/.config/agents/skills/ralph-wiggum/sdk
 
-# Install dependencies (first time only)
-bun install
+# Build standalone binary (first time only)
+bun install && bun run compile
+
+# Install to ~/.local/bin (no sudo required)
+mkdir -p ~/.local/bin && mv ralph ~/.local/bin/
+
+# Ensure ~/.local/bin is in PATH (add to shell config if needed)
+export PATH="$HOME/.local/bin:$PATH"
 
 # Run on your project
-bun run src/cli.ts auto -p /path/to/project --validation "pnpm run check"
+ralph auto -p /path/to/project --validation "pnpm run check"
 ```
 
 ### Commands
 
 ```bash
-bun run src/cli.ts plan      # Create implementation plan from specs
-bun run src/cli.ts build     # Execute tasks from plan
-bun run src/cli.ts auto      # Plan then build (recommended)
-bun run src/cli.ts --help    # Show all options
+ralph plan      # Create implementation plan from specs
+ralph build     # Execute tasks from plan
+ralph auto      # Plan then build (recommended)
+ralph --help    # Show all options
 ```
 
 ### Key Features

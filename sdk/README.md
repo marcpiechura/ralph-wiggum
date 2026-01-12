@@ -51,19 +51,45 @@ This creates the thread map link **without** using `read_thread`, keeping each b
 
 ## Installation
 
-```bash
-# From npm (when published)
-npm install -g @hmemcpy/ralph-wiggum
+### Standalone Binary (Recommended)
 
-# From source
+```bash
 cd sdk
 bun install
-bun run build
+bun run compile
+
+# Install to ~/.local/bin (no sudo required)
+mkdir -p ~/.local/bin
+mv ralph ~/.local/bin/
+
+# Ensure ~/.local/bin is in your PATH (add to ~/.bashrc or ~/.zshrc)
+export PATH="$HOME/.local/bin:$PATH"
+
+# Now use anywhere
+ralph --help
+ralph auto -p /path/to/project
+```
+
+### Cross-Platform Builds
+
+```bash
+bun run compile:macos      # macOS ARM64 (Apple Silicon)
+bun run compile:macos-x64  # macOS x64 (Intel)
+bun run compile:linux      # Linux x64
+bun run compile:linux-arm  # Linux ARM64
+```
+
+### Development Mode
+
+```bash
+cd sdk
+bun install
+bun run src/cli.ts --help
 ```
 
 ## Usage
 
-### CLI
+### CLI (Standalone Binary)
 
 ```bash
 # Auto mode: plan then build
@@ -78,6 +104,13 @@ ralph build
 # With options
 ralph build --verbose --validation "pnpm run check"
 ralph -p ./myproject plan
+```
+
+### CLI (Development Mode)
+
+```bash
+bun run src/cli.ts auto
+bun run src/cli.ts build -v
 ```
 
 ### Programmatic

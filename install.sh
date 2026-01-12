@@ -44,23 +44,39 @@ cp "$SCRIPT_DIR/sdk/package.json" "$SDK_DIR/"
 cp "$SCRIPT_DIR/sdk/tsconfig.json" "$SDK_DIR/"
 cp "$SCRIPT_DIR/sdk/README.md" "$SDK_DIR/"
 
-# Install dependencies if bun is available
+# Build standalone binary if bun is available
 if command -v bun &> /dev/null; then
-  echo "  Installing SDK dependencies..."
-  (cd "$SDK_DIR" && bun install --silent)
-  echo "  ✓ Ralph 2.0 SDK installed with dependencies"
+  echo "  Installing dependencies and compiling..."
+  (cd "$SDK_DIR" && bun install --silent && bun run compile 2>/dev/null)
+  
+  if [[ -f "$SDK_DIR/ralph" ]]; then
+    # Install to user's local bin
+    LOCAL_BIN="$HOME/.local/bin"
+    mkdir -p "$LOCAL_BIN"
+    cp "$SDK_DIR/ralph" "$LOCAL_BIN/"
+    chmod +x "$LOCAL_BIN/ralph"
+    echo "  ✓ Ralph 2.0 binary installed to $LOCAL_BIN/ralph"
+    
+    # Check if ~/.local/bin is in PATH
+    if [[ ":$PATH:" != *":$LOCAL_BIN:"* ]]; then
+      echo -e "${YELLOW}  ⚠ Add $LOCAL_BIN to your PATH:${NC}"
+      echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
+  else
+    echo -e "${YELLOW}  ⚠ Compilation failed, use dev mode instead${NC}"
+  fi
 else
-  echo -e "${YELLOW}  ⚠ bun not found, skipping dependency install${NC}"
-  echo "    Run 'cd $SDK_DIR && bun install' manually"
-  echo "  ✓ Ralph 2.0 SDK files installed"
+  echo -e "${YELLOW}  ⚠ bun not found, skipping compilation${NC}"
+  echo "    Install bun: curl -fsSL https://bun.sh/install | bash"
+  echo "  ✓ Ralph 2.0 SDK source files installed"
 fi
 
 echo ""
 echo "Done! Installed to:"
 echo "  - Claude Code: $CLAUDE_SKILL_DIR"
 echo "  - Amp (v1):    $AMP_SKILL_DIR"
-echo "  - Amp (v2):    $SDK_DIR"
+echo "  - Amp (v2):    $LOCAL_BIN/ralph (if compiled)"
 echo ""
 echo "Usage:"
 echo "  Ralph 1.0: /skill ralph"
-echo "  Ralph 2.0: bun run $SDK_DIR/src/cli.ts --help"
+echo "  Ralph 2.0: ralph --help"
