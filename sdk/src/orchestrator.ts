@@ -4,7 +4,7 @@
  * Coordinates planning and build threads using the Amp SDK.
  */
 
-import { execute, type StreamMessage } from '@sourcegraph/amp-sdk';
+import { execute, type StreamMessage } from './amp-executor.js';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import type { RalphConfig, RalphOptions, Task, ThreadResult } from './types.js';

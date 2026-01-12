@@ -75,20 +75,19 @@ See [sdk/README.md](sdk/README.md) for full documentation.
 
 ---
 
-## Ralph 1.0 (Legacy)
+## Ralph 1.0 (Skill-based Setup)
 
-Traditional bash-based loop that restarts Amp for each iteration.
+Use the `/skill ralph` command in Amp to generate specs and plans from feature docs.
 
 ### Usage
 
 ```bash
-# Generate loop files
+# In an Amp session, generate infrastructure from a feature doc
 /skill ralph docs/my-feature.md
 
-# Run the loop
-./loop.sh           # Auto mode: plan first, then build
-./loop.sh plan      # Planning mode only
-./loop.sh build     # Build mode only
+# Then run the ralph binary to execute
+ralph build         # Execute tasks from the plan
+ralph auto          # Re-plan then build
 ```
 
 ### Generated Files
@@ -99,7 +98,6 @@ Traditional bash-based loop that restarts Amp for each iteration.
 | `IMPLEMENTATION_PLAN.md` | Prioritized task list |
 | `PROMPT_plan.md` | Planning mode instructions |
 | `PROMPT_build.md` | Building mode instructions |
-| `loop.sh` | The bash loop script |
 
 ---
 
