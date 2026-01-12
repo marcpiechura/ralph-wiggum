@@ -243,6 +243,8 @@ while true; do
 
   EXIT_CODE=$?
   OUTPUT=$(cat "$TEMP_OUTPUT")
+  # Extract only the final result message (not the entire stream including user input)
+  RESULT_MSG=$(cat "$TEMP_OUTPUT" | jq -r 'select(.type == "result") | .result // empty' 2>/dev/null | tail -1)
   rm -f "$TEMP_OUTPUT"
   set -e
 
@@ -272,8 +274,8 @@ while true; do
 
   CONSECUTIVE_FAILURES=0
 
-  # Check for completion signal
-  if [[ "$OUTPUT" =~ "RALPH_COMPLETE" ]]; then
+  # Check for completion signal in the RESULT only (not the input prompt)
+  if [[ "$RESULT_MSG" =~ "RALPH_COMPLETE" ]]; then
     echo ""
     echo -e "${GREEN}=== Ralph Complete ===${NC}"
     echo -e "${GREEN}Amp has signaled that the ${MODE} loop is finished.${NC}"

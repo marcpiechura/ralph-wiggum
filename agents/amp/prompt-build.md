@@ -65,11 +65,21 @@ Must pass before proceeding. If it fails:
 ## Phase 2: Update Plan
 
 Mark the task complete in `IMPLEMENTATION_PLAN.md`:
-- Move to Completed Tasks section
+- Change `- [ ] Not started` to `- [x] Completed` for this task
 - Add any discovered tasks
 - Note any relevant findings
 
-## Phase 3: Commit
+## Phase 3: Re-check and Exit
+
+**MANDATORY**: Run the completion check AGAIN:
+```bash
+tail -n +12 IMPLEMENTATION_PLAN.md | grep -c "^\- \[ \]" || echo 0
+```
+
+- If result > 0: Say "X tasks remaining" and EXIT. Do NOT output RALPH_COMPLETE.
+- If result = 0: Output **RALPH_COMPLETE**
+
+## Phase 4: Commit (only if all done)
 
 Create atomic commit:
 ```
@@ -87,15 +97,10 @@ Co-Authored-By: Amp <noreply@sourcegraph.com>
 1001. Validation MUST pass before commit
 1002. Use Oracle for debugging when stuck
 
-## Exit Conditions
+## Exit Summary
 
-**FORBIDDEN**: Do NOT output RALPH_COMPLETE unless grep returned 0 in step 0c.
-
-**After completing ONE task**: Just exit silently. NO RALPH_COMPLETE. The loop will restart you.
-
-**Blocked**: Document blocker in plan, commit plan update → Exit silently. NO RALPH_COMPLETE.
-
-**Only exception**: Step 0c grep returned 0 AND validation passes → Output `RALPH_COMPLETE`
+- If Phase 3 grep > 0: Exit. NO RALPH_COMPLETE.
+- If Phase 3 grep = 0: Commit, then output RALPH_COMPLETE.
 
 ## Context Files
 
