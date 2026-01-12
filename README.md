@@ -144,16 +144,17 @@ chmod +x loop.sh
 
 ```
 ralph-wiggum/
-├── SKILL.md                 # Skill metadata
+├── SKILL.md                # Skill metadata (Amp)
+├── .claude-plugin/         # Plugin metadata (Claude)
 ├── commands/
-│   └── ralph.md             # Main entry point
-├── common/                  # Shared components
+│   └── ralph.md            # Main entry point
+├── common/                 # Shared components
 │   ├── what-is-ralph.md
 │   ├── principles.md
 │   ├── spec-format.md
 │   ├── plan-format.md
 │   └── checklist.md
-└── agents/                  # Agent-specific files
+└── agents/                 # Agent-specific files
     ├── claude/
     │   ├── tools.md
     │   ├── prompt-plan.md

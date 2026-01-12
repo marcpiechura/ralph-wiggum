@@ -12,11 +12,11 @@ The argument should be a path to a feature/UX document, or a description of the 
 
 ---
 
-@../common/what-is-ralph.md
+@common/what-is-ralph.md
 
 ---
 
-@../common/principles.md
+@common/principles.md
 
 ---
 
@@ -60,13 +60,13 @@ Extract:
 
 ### Step 2: Generate Specs (`specs/*.md`)
 
-@../common/spec-format.md
+@common/spec-format.md
 
 ---
 
 ### Step 3: Generate `IMPLEMENTATION_PLAN.md`
 
-@../common/plan-format.md
+@common/plan-format.md
 
 ---
 
@@ -75,10 +75,10 @@ Extract:
 Based on `AGENT_TYPE`, use the appropriate template:
 
 **For Amp** (`AGENT_TYPE=amp`):
-@../agents/amp/prompt-plan.md
+@agents/amp/prompt-plan.md
 
 **For Claude** (`AGENT_TYPE=claude`):
-@../agents/claude/prompt-plan.md
+@agents/claude/prompt-plan.md
 
 Customize the template:
 - Replace `[List directories relevant to the feature]` with actual directories
@@ -91,10 +91,10 @@ Customize the template:
 Based on `AGENT_TYPE`, use the appropriate template:
 
 **For Amp** (`AGENT_TYPE=amp`):
-@../agents/amp/prompt-build.md
+@agents/amp/prompt-build.md
 
 **For Claude** (`AGENT_TYPE=claude`):
-@../agents/claude/prompt-build.md
+@agents/claude/prompt-build.md
 
 Customize the template:
 - Replace `[VALIDATION_COMMAND]` with the actual validation command from Step 1
@@ -107,10 +107,10 @@ Customize the template:
 Based on `AGENT_TYPE`, use the appropriate loop script:
 
 **For Amp** (`AGENT_TYPE=amp`):
-@../agents/amp/loop.sh
+@agents/amp/loop.sh
 
 **For Claude** (`AGENT_TYPE=claude`):
-@../agents/claude/loop.sh
+@agents/claude/loop.sh
 
 Write the script to `loop.sh` in the project root.
 
@@ -122,7 +122,7 @@ Run: `chmod +x loop.sh`
 
 ---
 
-@../common/checklist.md
+@common/checklist.md
 
 ---
 
@@ -131,7 +131,7 @@ Run: `chmod +x loop.sh`
 Based on detected agent, include appropriate tool guidance:
 
 **For Amp**:
-@../agents/amp/tools.md
+@agents/amp/tools.md
 
 **For Claude**:
-@../agents/claude/tools.md
+@agents/claude/tools.md
