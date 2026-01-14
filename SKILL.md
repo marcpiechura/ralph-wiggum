@@ -1,11 +1,11 @@
 ---
 name: ralph
-description: Generate the complete Ralph Wiggum loop infrastructure for iterative AI-driven development. Creates specs, implementation plans, and loop scripts for autonomous AI development.
+description: Interactive planning skill for Amp. Generates specs, implementation plans, and loop infrastructure through clarifying questions.
 ---
 
-# Ralph Wiggum Loop Generator
+# Ralph Planning Skill
 
-Generate the complete Ralph Wiggum loop infrastructure for iterative AI-driven development.
+Interactive planning for iterative AI-driven development.
 
 ## When to Use
 
@@ -19,29 +19,34 @@ All files are generated in the **project's root folder**:
 
 | File | Purpose |
 |------|---------|
-| `specs/*.md` | Feature specs (one topic per file) |
-| `IMPLEMENTATION_PLAN.md` | Prioritized task list |
-| `PROMPT_plan.md` | Planning mode instructions |
-| `PROMPT_build.md` | Building mode instructions |
-| `loop.sh` | The bash loop script |
+| `specs/<feature>.md` | Requirements, user stories, edge cases |
+| `IMPLEMENTATION_PLAN.md` | Summary + prioritized task list |
+| `PROMPT.md` | Build mode instructions |
+| `loop.sh` | Build-only loop script |
 
 ## Usage
 
-Provide a path to a feature document, or let it auto-discover in `docs/`:
+```
+/skill ralph [optional/path/to/plan.md]
+```
 
-```
-/skill ralph docs/my-feature.md
-/skill ralph
-```
+- If path provided: read that `.md` file as source specification
+- If no path: use current conversation context
+
+## Workflow
+
+1. **Clarification** — 3-5 A/B/C/D questions (respond with "1A, 2C, 3B")
+2. **Optional Oracle** — architectural review
+3. **Generate** — specs, plan, prompt, loop script
+4. **Build** — run `./loop.sh` to execute
 
 ## File Writing Behavior
 
-**Always overwrite existing files** when generating ralph files (specs, plans, prompts, loop scripts). These files are ephemeral and meant to be regenerated. Do not prompt to confirm overwriting, do not rename files, and do not create numbered variants.
+**Always overwrite existing files** when generating ralph files. These files are ephemeral and meant to be regenerated.
 
 ## Amp-Specific Features
 
-This skill leverages Amp's unique tools:
-- **Oracle**: For planning, gap analysis, and debugging
-- **Librarian**: For reading library documentation
+- **Oracle**: For architectural review and debugging
+- **Librarian**: For external library documentation
 - **finder**: For semantic codebase search
 - **Task**: For parallel subagent work
